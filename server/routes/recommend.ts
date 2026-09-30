@@ -3,19 +3,21 @@ import rateLimit from 'express-rate-limit';
 import { recommendRequestSchema } from '../../shared/schemas';
 import type { ApiError } from '../../shared/types';
 import { config } from '../config';
-import { UpstreamError } from '../services/gemini';
+import { UpstreamError } from '../services/openai';
 import { recommend } from '../services/recommend';
 
 export const recommendRouter = Router();
 
 const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  limit: 15,
+  windowMs: 24 * 60 * 60 * 1000,
+  limit: config.dailyLimit,
+  // Mislukte verzoeken (validatiefout, storing bij OpenAI) tellen niet mee.
+  skipFailedRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req, res: Response<ApiError>) => {
     res.status(429).json({
-      error: 'Je hebt even veel vragen gesteld. Wacht een paar minuten en probeer het opnieuw.',
+      error: `Je hebt de limiet van ${config.dailyLimit} adviezen per dag bereikt. Probeer het morgen opnieuw.`,
       code: 'rate_limited',
     });
   },
@@ -29,8 +31,8 @@ recommendRouter.post('/recommend', limiter, async (req, res: Response) => {
     res.status(400).json(body);
     return;
   }
-  if (!config.geminiApiKey) {
-    const body: ApiError = { error: 'De server mist een GEMINI_API_KEY. Controleer het .env-bestand.', code: 'server' };
+  if (!config.openaiApiKey) {
+    const body: ApiError = { error: 'De server mist een OPENAI_API_KEY. Controleer het .env-bestand.', code: 'server' };
     res.status(500).json(body);
     return;
   }

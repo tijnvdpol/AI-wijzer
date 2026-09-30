@@ -9,7 +9,7 @@ app.set('trust proxy', 1);
 app.use(express.json({ limit: '32kb' }));
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, model: config.geminiModel });
+  res.json({ ok: true, model: config.openaiModel });
 });
 app.use('/api', recommendRouter);
 
@@ -24,6 +24,6 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 });
 
 app.listen(config.port, () => {
-  console.log(`[server] AI Wijzer API draait op http://localhost:${config.port} (model: ${config.geminiModel})`);
+  console.log(`[server] AI Wijzer API draait op http://localhost:${config.port} (model: ${config.openaiModel})`);
   void initArtificialAnalysis();
 });

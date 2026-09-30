@@ -3,7 +3,7 @@ import type { Category } from '../../shared/categories';
 import { classificationSchema, recommendationSchema, type RecommendRequest } from '../../shared/schemas';
 import type { RecommendResponse, RecommendationResult } from '../../shared/types';
 import { getCategoryData, lookupBenchmark, toPromptRows } from './artificialAnalysis';
-import { generateJson, type GroundingSource } from './gemini';
+import { generateJson, type GroundingSource } from './openai';
 import { CLASSIFY_SYSTEM, RECOMMEND_SYSTEM, buildClassifyPrompt, buildRecommendPrompt } from './prompts';
 
 const RESPONSE_TTL_MS = 60 * 60 * 1000;
@@ -99,7 +99,7 @@ export async function recommend(req: RecommendRequest): Promise<RecommendRespons
   const data = await getCategoryData(category);
   const rows = data.top.length > 0 ? toPromptRows(data.top) : null;
 
-  // 3. Main call: Google Search + URL Context + structured output
+  // 3. Main call: OpenAI web search + structured output
   const { data: rec, groundingSources } = await generateJson({
     label: `advies:${category}`,
     schema: recommendationSchema,
@@ -109,7 +109,7 @@ export async function recommend(req: RecommendRequest): Promise<RecommendRespons
     thinking: 'default',
   });
 
-  // Attach real benchmark numbers by stable id (Gemini only picks the id, never the score)
+  // Attach real benchmark numbers by stable id (the model only picks the id, never the score)
   const withBenchmark = <T extends { benchmarkModelId: string | null; url: string }>(item: T) => ({
     ...item,
     url: safeUrl(item.url),
