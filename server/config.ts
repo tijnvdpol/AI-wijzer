@@ -13,6 +13,7 @@ export const config = {
   port: Number(process.env.PORT) || 3001,
   openaiApiKey: required('OPENAI_API_KEY'),
   openaiModel: process.env.OPENAI_MODEL?.trim() || 'gpt-5-mini',
+  dailyLimit: Number(process.env.DAILY_LIMIT) >= 1 ? Math.floor(Number(process.env.DAILY_LIMIT)) : 5,
   aaApiKey: required('ARTIFICIAL_ANALYSIS_API_KEY'),
   aaBaseUrl: 'https://artificialanalysis.ai/api/v2',
 } as const;

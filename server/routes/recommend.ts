@@ -9,13 +9,15 @@ import { recommend } from '../services/recommend';
 export const recommendRouter = Router();
 
 const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  limit: 15,
+  windowMs: 24 * 60 * 60 * 1000,
+  limit: config.dailyLimit,
+  // Mislukte verzoeken (validatiefout, storing bij OpenAI) tellen niet mee.
+  skipFailedRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req, res: Response<ApiError>) => {
     res.status(429).json({
-      error: 'Je hebt even veel vragen gesteld. Wacht een paar minuten en probeer het opnieuw.',
+      error: `Je hebt de limiet van ${config.dailyLimit} adviezen per dag bereikt. Probeer het morgen opnieuw.`,
       code: 'rate_limited',
     });
   },

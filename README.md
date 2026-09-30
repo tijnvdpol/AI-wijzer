@@ -70,7 +70,7 @@ Voor categorieën zonder benchmarkdata (muziek, presentaties, websitebouwers, 3D
 
 ## Kosten en limieten
 
-- `/api/recommend` heeft een limiet van 15 verzoeken per 10 minuten per IP.
+- `/api/recommend` heeft een limiet van 5 adviezen per dag per IP (aan te passen met `DAILY_LIMIT` in `.env`). Mislukte verzoeken tellen niet mee. De teller staat in het geheugen en begint opnieuw bij een herstart van de server.
 - Identieke verzoeken (zelfde tekst en instellingen) worden 1 uur uit het geheugen beantwoord.
 - Tokengebruik per aanroep verschijnt in de serverconsole (`[openai] … tokens: input=… output=…`).
 
