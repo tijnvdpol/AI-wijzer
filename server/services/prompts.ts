@@ -1,5 +1,5 @@
-import { CATEGORY_LABELS, type Category } from '../../shared/categories';
-import type { RecommendRequest } from '../../shared/schemas';
+import { CATEGORY_LABELS, type Category } from '../../shared/categories.js';
+import type { RecommendRequest } from '../../shared/schemas.js';
 
 export const CLASSIFY_SYSTEM = `Je classificeert verzoeken van gebruikers die een AI-tool zoeken.
 Kies precies één categorie:

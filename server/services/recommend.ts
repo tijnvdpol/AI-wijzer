@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
-import type { Category } from '../../shared/categories';
-import { classificationSchema, recommendationSchema, type RecommendRequest } from '../../shared/schemas';
-import type { RecommendResponse, RecommendationResult } from '../../shared/types';
-import { getCategoryData, lookupBenchmark, toPromptRows } from './artificialAnalysis';
-import { generateJson, type GroundingSource } from './openai';
-import { CLASSIFY_SYSTEM, RECOMMEND_SYSTEM, buildClassifyPrompt, buildRecommendPrompt } from './prompts';
+import type { Category } from '../../shared/categories.js';
+import { classificationSchema, recommendationSchema, type RecommendRequest } from '../../shared/schemas.js';
+import type { RecommendResponse, RecommendationResult } from '../../shared/types.js';
+import { getCategoryData, lookupBenchmark, toPromptRows } from './artificialAnalysis.js';
+import { generateJson, type GroundingSource } from './openai.js';
+import { CLASSIFY_SYSTEM, RECOMMEND_SYSTEM, buildClassifyPrompt, buildRecommendPrompt } from './prompts.js';
 
 const RESPONSE_TTL_MS = 60 * 60 * 1000;
 const MAX_CACHED = 200;
