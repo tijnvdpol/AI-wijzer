@@ -13,6 +13,9 @@ export const config = {
   port: Number(process.env.PORT) || 3001,
   openaiApiKey: required('OPENAI_API_KEY'),
   openaiModel: process.env.OPENAI_MODEL?.trim() || 'gpt-5-mini',
+  accessPin: process.env.ACCESS_PIN?.trim() ?? '',
+  // Optional extra secret for the session signature; the PIN itself is always part of the key.
+  sessionSecret: process.env.SESSION_SECRET?.trim() ?? '',
   dailyLimit: Number(process.env.DAILY_LIMIT) >= 1 ? Math.floor(Number(process.env.DAILY_LIMIT)) : 5,
   aaApiKey: required('ARTIFICIAL_ANALYSIS_API_KEY'),
   aaBaseUrl: 'https://artificialanalysis.ai/api/v2',

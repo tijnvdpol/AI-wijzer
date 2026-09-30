@@ -1,10 +1,15 @@
 import OpenAI, { APIConnectionTimeoutError, APIError } from 'openai';
 import type { Response } from 'openai/resources/responses/responses';
 import { z } from 'zod';
-import { config } from '../config';
+import { config } from '../config.js';
 
 // The SDK retries 429/5xx/connection errors itself with exponential backoff.
-const client = new OpenAI({ apiKey: config.openaiApiKey, timeout: 120_000, maxRetries: 3 });
+// Created on first use: the SDK throws when the key is missing, which must not crash the server/function at load time.
+let client: OpenAI | undefined;
+function getClient(): OpenAI {
+  client ??= new OpenAI({ apiKey: config.openaiApiKey, timeout: 120_000, maxRetries: 3 });
+  return client;
+}
 
 export class UpstreamError extends Error {
   constructor(
@@ -79,6 +84,17 @@ function mapError(err: unknown): UpstreamError {
   }
   const status = err instanceof APIError ? err.status : undefined;
   const message = err instanceof Error ? err.message : String(err);
+  if (status === 401) {
+    console.error('[openai] sleutel geweigerd:', message.slice(0, 300));
+    return new UpstreamError('De OpenAI API-sleutel is ongeldig. Controleer OPENAI_API_KEY in .env.', 'upstream');
+  }
+  if (status === 403 || status === 404) {
+    console.error('[openai] geen toegang tot model:', message.slice(0, 300));
+    return new UpstreamError(
+      `Het OpenAI-model '${config.openaiModel}' is niet beschikbaar voor je project. Kies een ander model bij OPENAI_MODEL in .env.`,
+      'upstream',
+    );
+  }
   if (status === 429) {
     console.warn('[openai] limiet:', message.slice(0, 500));
     return new UpstreamError('De OpenAI-limiet of het tegoed is bereikt. Probeer het over een minuutje opnieuw.', 'rate_limited');
@@ -120,14 +136,17 @@ ${JSON.stringify(jsonSchema)}`;
         model: config.openaiModel,
         instructions: options.systemInstruction,
         input,
-        reasoning: { effort: options.thinking === 'low' ? ('low' as const) : ('medium' as const) },
+        // Alleen redeneermodellen (gpt-5, o-serie) kennen de parameter reasoning; gpt-4.x geeft er een 400 op.
+        ...(/^(gpt-5|od)/i.test(config.openaiModel)
+          ? { reasoning: { effort: options.thinking === 'low' ? ('low' as const) : ('medium' as const) } }
+          : {}),
         ...(options.useTools ? { tools: [{ type: 'web_search' as const }] } : {}),
         ...(nativeJson
           ? { text: { format: { type: 'json_schema' as const, name: 'antwoord', strict: true, schema: jsonSchema } } }
           : {}),
       };
       try {
-        response = await client.responses.create(request);
+        response = await getClient().responses.create(request);
       } catch (err) {
         if (nativeJson && err instanceof APIError && err.status === 400) {
           console.warn(`[openai] ${options.label}: gestructureerde uitvoer geweigerd, schema gaat in de prompt:`, err.message.slice(0, 300));

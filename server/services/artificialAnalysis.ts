@@ -1,16 +1,20 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import type { BenchmarkCategory, Category } from '../../shared/categories';
-import type { BenchmarkInfo, BenchmarkMeta, NormalizedModel } from '../../shared/types';
-import { config } from '../config';
+import type { BenchmarkCategory, Category } from '../../shared/categories.js';
+import type { BenchmarkInfo, BenchmarkMeta, NormalizedModel } from '../../shared/types.js';
+import { config } from '../config.js';
 
 const TTL_MS = 24 * 60 * 60 * 1000;
 /** After a failed refresh with stale data available, wait before trying again. */
 const RETRY_AFTER_FAIL_MS = 10 * 60 * 1000;
 const TOP_N = 15;
-const CACHE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'cache');
+// Vercel's filesystem is read-only except /tmp (which only lives as long as the instance).
+const CACHE_DIR = process.env.VERCEL
+  ? path.join(tmpdir(), 'ai-wijzer-cache')
+  : path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'cache');
 
 type EndpointKey = 'llms' | 'text-to-image' | 'image-editing' | 'text-to-video' | 'image-to-video' | 'text-to-speech';
 

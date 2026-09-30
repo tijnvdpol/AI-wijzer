@@ -1,5 +1,5 @@
-import type { BenchmarkCategory, Category } from './categories';
-import type { AiRecommendation } from './schemas';
+import type { BenchmarkCategory, Category } from './categories.js';
+import type { AiRecommendation } from './schemas.js';
 
 export type ScoreType = 'intelligence index' | 'elo';
 
@@ -67,5 +67,5 @@ export type RecommendResponse =
 
 export interface ApiError {
   error: string;
-  code?: 'rate_limited' | 'invalid_request' | 'upstream' | 'invalid_response' | 'timeout' | 'server';
+  code?: 'rate_limited' | 'invalid_request' | 'upstream' | 'invalid_response' | 'timeout' | 'server' | 'unauthorized';
 }

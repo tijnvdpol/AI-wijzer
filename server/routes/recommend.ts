@@ -1,29 +1,26 @@
 import { Router, type Response } from 'express';
-import rateLimit from 'express-rate-limit';
-import { recommendRequestSchema } from '../../shared/schemas';
-import type { ApiError } from '../../shared/types';
-import { config } from '../config';
-import { UpstreamError } from '../services/openai';
-import { recommend } from '../services/recommend';
+import { recommendRequestSchema } from '../../shared/schemas.js';
+import type { ApiError } from '../../shared/types.js';
+import { config } from '../config.js';
+import { UpstreamError } from '../services/openai.js';
+import { login, logout, requirePin, sessionStatus } from '../services/auth.js';
+import { dailyLimit } from '../services/dailyLimit.js';
+import { recommend } from '../services/recommend.js';
 
 export const recommendRouter = Router();
 
-const limiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000,
-  limit: config.dailyLimit,
-  // Mislukte verzoeken (validatiefout, storing bij OpenAI) tellen niet mee.
-  skipFailedRequests: true,
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (_req, res: Response<ApiError>) => {
-    res.status(429).json({
-      error: `Je hebt de limiet van ${config.dailyLimit} adviezen per dag bereikt. Probeer het morgen opnieuw.`,
-      code: 'rate_limited',
-    });
-  },
+recommendRouter.get('/sessie', (req, res) => {
+  res.json(sessionStatus(req));
+});
+recommendRouter.post('/login', (req, res) => {
+  void login(req, res, (req.body as { pin?: unknown } | undefined)?.pin);
+});
+recommendRouter.post('/logout', (req, res) => {
+  logout(req, res);
 });
 
-recommendRouter.post('/recommend', limiter, async (req, res: Response) => {
+// Order matters: check the PIN first, so anonymous requests neither use up the daily limit nor reach OpenAI.
+recommendRouter.post('/recommend', requirePin, dailyLimit, async (req, res: Response) => {
   const parsed = recommendRequestSchema.safeParse(req.body);
   if (!parsed.success) {
     const message = parsed.error.issues[0]?.message ?? 'Ongeldig verzoek.';

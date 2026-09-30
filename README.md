@@ -87,3 +87,19 @@ shared/   Gedeelde types en zod-schema's
 - **"De server mist een OPENAI_API_KEY"** – controleer of `.env` bestaat in de hoofdmap en herstart `npm run dev`.
 - **Geen benchmarkdata** – controleer `ARTIFICIAL_ANALYSIS_API_KEY`; de serverconsole toont `[aa]`-meldingen.
 - **Modelfout van OpenAI** – controleer of `OPENAI_MODEL` een bestaande modelnaam is.
+
+## Op Vercel zetten
+
+1. Importeer de GitHub-repo in Vercel (*Add New → Project*). Framework Vite, build `npm run build`, output `dist` (staat in `vercel.json`).
+2. Zet onder *Settings → Environment Variables*: `ACCESS_PIN`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `ARTIFICIAL_ANALYSIS_API_KEY` en optioneel `DAILY_LIMIT`.
+3. Voeg onder *Storage* een **Upstash Redis**-database toe en koppel die aan het project. Vercel zet dan `KV_REST_API_URL` en `KV_REST_API_TOKEN`. Zonder Redis telt de daglimiet per serverinstantie en dus niet betrouwbaar.
+4. Deploy opnieuw. `/api/*` draait als één serverless function (`api/index.ts`, `maxDuration` 300 s in `vercel.json`).
+
+## Pincode
+
+De app is beveiligd met een pincode die op de **server** wordt gecontroleerd (niet alleen in de pagina), zodat niemand de API rechtstreeks kan aanroepen.
+
+- Zet `ACCESS_PIN` in `.env` (lokaal optioneel; leeg = geen pincode) of in de omgevingsvariabelen van Vercel (daar verplicht: zonder `ACCESS_PIN` blijft de app op slot).
+- Na een juiste pincode krijg je 30 dagen een beveiligde cookie (HttpOnly, ondertekend). Een andere `ACCESS_PIN` logt iedereen uit.
+- Maximaal 5 foute pogingen per IP per 15 minuten; daarna volgt een blokkade. Op Vercel werkt dat betrouwbaar met Upstash Redis.
+- Kies liever een langere code dan 4 cijfers (tot 32 tekens mag); een langere pincode is veel moeilijker te raden.

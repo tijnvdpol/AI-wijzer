@@ -1,6 +1,9 @@
 import type { RecommendRequest } from '../../../shared/schemas';
 import type { ApiError, RecommendResponse } from '../../../shared/types';
 
+/** Fired when the server says the PIN session is missing or expired; PinGate then shows the PIN screen again. */
+export const UNAUTHORIZED_EVENT = 'aiwijzer:unauthorized';
+
 export class ApiRequestError extends Error {
   constructor(
     message: string,
@@ -37,6 +40,7 @@ export async function requestRecommendation(
   } catch {
     throw new ApiRequestError('Onverwacht antwoord van de server.', 'server');
   }
+  if (res.status === 401) window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
   if (!res.ok) {
     if (isApiError(data)) throw new ApiRequestError(data.error, data.code);
     throw new ApiRequestError('Er ging iets mis. Probeer het opnieuw.', 'server');

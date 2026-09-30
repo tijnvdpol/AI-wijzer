@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CATEGORIES } from './categories';
+import { CATEGORIES } from './categories.js';
 
 export const categorySchema = z.enum(CATEGORIES);
 
