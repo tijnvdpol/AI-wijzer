@@ -213,7 +213,7 @@ function normalize(category: BenchmarkCategory, raw: unknown[]): NormalizedModel
 export interface CategoryData {
   /** All models of the category, best first. */
   models: NormalizedModel[];
-  /** Compact top list to send to Gemini. */
+  /** Compact top list to send to the model. */
   top: NormalizedModel[];
   meta: BenchmarkMeta;
 }

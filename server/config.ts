@@ -11,8 +11,8 @@ function required(name: string): string {
 
 export const config = {
   port: Number(process.env.PORT) || 3001,
-  geminiApiKey: required('GEMINI_API_KEY'),
-  geminiModel: process.env.GEMINI_MODEL?.trim() || 'gemini-3.8-flash',
+  openaiApiKey: required('OPENAI_API_KEY'),
+  openaiModel: process.env.OPENAI_MODEL?.trim() || 'gpt-5-mini',
   aaApiKey: required('ARTIFICIAL_ANALYSIS_API_KEY'),
   aaBaseUrl: 'https://artificialanalysis.ai/api/v2',
 } as const;

@@ -1,5 +1,5 @@
 import type { BenchmarkCategory, Category } from './categories';
-import type { GeminiRecommendation } from './schemas';
+import type { AiRecommendation } from './schemas';
 
 export type ScoreType = 'intelligence index' | 'elo';
 
@@ -41,9 +41,9 @@ export interface BenchmarkMeta {
 
 type WithBenchmark<T> = T & { benchmark: BenchmarkInfo | null };
 
-export type ToolResult = WithBenchmark<GeminiRecommendation['topPick']>;
-export type AlternativeResult = WithBenchmark<GeminiRecommendation['alternatives'][number]>;
-export type ExistingResult = WithBenchmark<NonNullable<GeminiRecommendation['existingOption']>>;
+export type ToolResult = WithBenchmark<AiRecommendation['topPick']>;
+export type AlternativeResult = WithBenchmark<AiRecommendation['alternatives'][number]>;
+export type ExistingResult = WithBenchmark<NonNullable<AiRecommendation['existingOption']>>;
 
 export interface RecommendationResult {
   category: Category;

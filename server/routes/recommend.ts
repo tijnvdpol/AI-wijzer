@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { recommendRequestSchema } from '../../shared/schemas';
 import type { ApiError } from '../../shared/types';
 import { config } from '../config';
-import { UpstreamError } from '../services/gemini';
+import { UpstreamError } from '../services/openai';
 import { recommend } from '../services/recommend';
 
 export const recommendRouter = Router();
@@ -29,8 +29,8 @@ recommendRouter.post('/recommend', limiter, async (req, res: Response) => {
     res.status(400).json(body);
     return;
   }
-  if (!config.geminiApiKey) {
-    const body: ApiError = { error: 'De server mist een GEMINI_API_KEY. Controleer het .env-bestand.', code: 'server' };
+  if (!config.openaiApiKey) {
+    const body: ApiError = { error: 'De server mist een OPENAI_API_KEY. Controleer het .env-bestand.', code: 'server' };
     res.status(500).json(body);
     return;
   }

@@ -33,7 +33,7 @@ export const recommendRequestSchema = z.object({
   preferences: preferencesSchema,
 });
 
-/* ---------- Gemini classification call ---------- */
+/* ---------- OpenAI classification call ---------- */
 
 export const classificationSchema = z.object({
   category: categorySchema.describe('De best passende categorie voor het verzoek.'),
@@ -46,7 +46,7 @@ export const classificationSchema = z.object({
     .describe('2 tot 4 korte klikbare antwoorden op de verduidelijkende vraag; leeg als er geen vraag is.'),
 });
 
-/* ---------- Gemini recommendation (structured output) ---------- */
+/* ---------- OpenAI recommendation (structured output) ---------- */
 
 const costSchema = z.object({
   type: z
@@ -120,7 +120,7 @@ export const recommendationSchema = z.object({
 });
 
 export type Classification = z.infer<typeof classificationSchema>;
-export type GeminiRecommendation = z.infer<typeof recommendationSchema>;
+export type AiRecommendation = z.infer<typeof recommendationSchema>;
 export type RecommendRequest = z.infer<typeof recommendRequestSchema>;
 export type Budget = z.infer<typeof budgetSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
