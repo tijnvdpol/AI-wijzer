@@ -91,7 +91,7 @@ function mapError(err: unknown): UpstreamError {
   if (status === 403 || status === 404) {
     console.error('[openai] geen toegang tot model:', message.slice(0, 300));
     return new UpstreamError(
-      `Het OpenAI-model '${config.openaiModel}' is niet beschikbaar voor je project. Kies een ander model bij OPENAI_MODEL in .env.`,
+      `Het OpenAI-model '${config.openaiModel}' is niet beschikbaar voor je project. Kies een ander model bij OPENAI_MODEL (.env of Vercel). Reden van OpenAI: ${message.replace(/sk-[A-Za-z0-9_*.-]+/g, 'sk-…').slice(0, 200)}`,
       'upstream',
     );
   }
