@@ -5,7 +5,8 @@ import { config } from '../config.js';
 import { decrement, increment } from './counter.js';
 
 const COOKIE = 'aiwijzer_sessie';
-const SESSION_SECONDS = 30 * 24 * 60 * 60;
+// The PIN is asked on every visit (the client logs out on page load). This is only the maximum lifetime of an open session.
+const SESSION_SECONDS = 2 * 60 * 60;
 const MAX_FAILED = 5;
 const LOCKOUT_SECONDS = 15 * 60;
 
@@ -50,7 +51,8 @@ function cookieFlags(req: Request): string {
 
 function setSession(req: Request, res: Response): void {
   const expires = Date.now() + SESSION_SECONDS * 1000;
-  res.setHeader('Set-Cookie', `${COOKIE}=${expires}.${sign(expires)}; Max-Age=${SESSION_SECONDS}; ${cookieFlags(req)}`);
+  // No Max-Age: a session cookie that the browser drops when it is closed.
+  res.setHeader('Set-Cookie', `${COOKIE}=${expires}.${sign(expires)}; ${cookieFlags(req)}`);
 }
 
 export const requirePin: RequestHandler = (req, res: Response<ApiError>, next: NextFunction) => {

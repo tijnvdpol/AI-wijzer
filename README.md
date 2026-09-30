@@ -100,6 +100,6 @@ shared/   Gedeelde types en zod-schema's
 De app is beveiligd met een pincode die op de **server** wordt gecontroleerd (niet alleen in de pagina), zodat niemand de API rechtstreeks kan aanroepen.
 
 - Zet `ACCESS_PIN` in `.env` (lokaal optioneel; leeg = geen pincode) of in de omgevingsvariabelen van Vercel (daar verplicht: zonder `ACCESS_PIN` blijft de app op slot).
-- Na een juiste pincode krijg je 30 dagen een beveiligde cookie (HttpOnly, ondertekend). Een andere `ACCESS_PIN` logt iedereen uit.
+- De pincode wordt bij **elk bezoek** opnieuw gevraagd (ook na verversen of in een nieuw tabblad). Na een juiste pincode krijg je een sessiecookie (HttpOnly, ondertekend) die hooguit 2 uur geldt en verdwijnt als je de browser sluit. Met de knop *Uitloggen* sluit je de sessie direct. Een andere `ACCESS_PIN` logt iedereen uit.
 - Maximaal 5 foute pogingen per IP per 15 minuten; daarna volgt een blokkade. Op Vercel werkt dat betrouwbaar met Upstash Redis.
 - Kies liever een langere code dan 4 cijfers (tot 32 tekens mag); een langere pincode is veel moeilijker te raden.

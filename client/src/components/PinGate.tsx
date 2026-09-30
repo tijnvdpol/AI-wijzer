@@ -1,25 +1,61 @@
 import { Compass, Loader2, Lock } from 'lucide-react';
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { UNAUTHORIZED_EVENT } from '../lib/api';
 
 type Phase = 'checking' | 'locked' | 'open';
 
-/** Shows a PIN screen until the server confirms a valid session. The real check happens on the server. */
+const LogoutContext = createContext<(() => void) | null>(null);
+
+/** Returns a logout function when the app is protected by a PIN, otherwise null (no button needed). */
+export function useLogout(): (() => void) | null {
+  return useContext(LogoutContext);
+}
+
+/**
+ * Shows a PIN screen on every visit: on page load an existing session is ended first, so a reload or a new tab
+ * always asks for the PIN again. The real check happens on the server.
+ */
 export function PinGate({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<Phase>('checking');
+  const [pinRequired, setPinRequired] = useState(true);
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    fetch('/api/sessie')
-      .then((r) => r.json() as Promise<{ pinRequired: boolean; authorized: boolean }>)
-      .then((s) => setPhase(!s.pinRequired || s.authorized ? 'open' : 'locked'))
-      // Server unreachable: show the app; requests will report the problem themselves.
-      .catch(() => setPhase('open'));
+    let cancelled = false;
+    (async () => {
+      try {
+        const s = (await (await fetch('/api/sessie')).json()) as { pinRequired: boolean };
+        if (cancelled) return;
+        setPinRequired(s.pinRequired);
+        if (!s.pinRequired) {
+          setPhase('open');
+          return;
+        }
+        await fetch('/api/logout', { method: 'POST' }).catch(() => undefined);
+        if (!cancelled) setPhase('locked');
+      } catch {
+        // Server unreachable: show the app; requests will report the problem themselves.
+        if (!cancelled) setPhase('open');
+      }
+    })();
     const onUnauthorized = () => setPhase('locked');
     window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
-    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    };
+  }, []);
+
+  const logout = useCallback(() => {
+    void fetch('/api/logout', { method: 'POST' })
+      .catch(() => undefined)
+      .finally(() => {
+        setPin('');
+        setError('');
+        setPhase('locked');
+      });
   }, []);
 
   async function submit(e: FormEvent) {
@@ -48,7 +84,9 @@ export function PinGate({ children }: { children: ReactNode }) {
     }
   }
 
-  if (phase === 'open') return <>{children}</>;
+  if (phase === 'open') {
+    return <LogoutContext.Provider value={pinRequired ? logout : null}>{children}</LogoutContext.Provider>;
+  }
   if (phase === 'checking') {
     return (
       <div className="flex min-h-screen items-center justify-center" role="status" aria-label="Laden">
@@ -74,7 +112,7 @@ export function PinGate({ children }: { children: ReactNode }) {
           className="input text-center text-2xl tracking-[0.4em]"
           type="password"
           inputMode="numeric"
-          autoComplete="current-password"
+          autoComplete="off"
           autoFocus
           maxLength={32}
           value={pin}

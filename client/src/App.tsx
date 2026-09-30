@@ -1,7 +1,8 @@
-import { Compass, Moon, Sun } from 'lucide-react';
+import { Compass, LogOut, Moon, Sun } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import type { RecommendRequest } from '../../shared/schemas';
 import { BudgetPicker } from './components/BudgetPicker';
+import { useLogout } from './components/PinGate';
 import { HistoryList } from './components/HistoryList';
 import { RequestForm } from './components/RequestForm';
 import { ResultView } from './components/ResultView';
@@ -17,6 +18,7 @@ export default function App() {
   const [preferences, setPreferences] = usePreferences();
   const { history, add, clear } = useHistory();
   const { dark, toggle } = useTheme();
+  const logout = useLogout();
   const [query, setQuery] = useState('');
   const lastRequest = useRef<RecommendRequest | null>(null);
 
@@ -52,14 +54,21 @@ export default function App() {
             <p className="text-sm text-slate-500 dark:text-slate-400">De beste AI-tool voor wat jij wilt maken</p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={toggle}
-          className="btn-ghost !px-3"
-          aria-label={dark ? 'Schakel naar lichte modus' : 'Schakel naar donkere modus'}
-        >
-          {dark ? <Sun className="h-5 w-5" aria-hidden /> : <Moon className="h-5 w-5" aria-hidden />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggle}
+            className="btn-ghost !px-3"
+            aria-label={dark ? 'Schakel naar lichte modus' : 'Schakel naar donkere modus'}
+          >
+            {dark ? <Sun className="h-5 w-5" aria-hidden /> : <Moon className="h-5 w-5" aria-hidden />}
+          </button>
+          {logout && (
+            <button type="button" onClick={logout} className="btn-ghost">
+              <LogOut className="h-4 w-4" aria-hidden /> Uitloggen
+            </button>
+          )}
+        </div>
       </header>
 
       <SubscriptionsPanel settings={settings} onChange={setSettings} />
